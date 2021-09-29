@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:english_words/english_words.dart';
+import 'dart:convert';
+import 'dart:core';
 
 void main() => runApp(MyApp());
 
@@ -7,6 +10,7 @@ class MyApp extends StatelessWidget {
   @override
     Widget build(BuildContext context) {
       return MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Startup Name Generator',
         theme: ThemeData(
             brightness: Brightness.dark,
@@ -22,8 +26,9 @@ class RandomWords extends StatefulWidget {
 }
 
 class _RandomWordsState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
-  final _saved = <WordPair>{};
+  final _bandNames = <String>[];
+  // final _suggestions = <WordPair>[];
+  final _saved = <String>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   @override
   Widget build(BuildContext context) {
@@ -38,27 +43,44 @@ class _RandomWordsState extends State<RandomWords> {
         );
   }
 
+  readFilesFromAssets() async {
+    String text = await rootBundle.loadString('assets/BNtest.txt');
+
+    // print(text);
+
+    LineSplitter ls = new LineSplitter();
+    List<String> lines = ls.convert(text);
+    //print(lines);
+    //_bandNames = ls.convert(text);
+    _bandNames.addAll(lines);
+    print(_bandNames[1]);
+    print(_bandNames[0]);
+    //return lines;
+  }
+
   Widget _buildSuggestions() {
+     readFilesFromAssets();
      return ListView.builder(
        padding: const EdgeInsets.all(16),
        itemBuilder: (BuildContext _context, int i) {
+         print(i);
          if (i.isOdd) {
-           return Divider();
+             return Divider();
          }
          final int index = i ~/ 2;
-         if (index >= _suggestions.length) {
-           _suggestions.addAll(generateWordPairs().take(10));
-         }
-         return _buildRow(_suggestions[index]);
+         //if (index < _bandNames.length) {
+           //return _buildRow(_bandNames[index]);
+         //}
+         return _buildRow(_bandNames[index]);
        }
      );
   }
 
-  Widget _buildRow(WordPair pair) {
+  Widget _buildRow(String pair) {
     final alreadySaved = _saved.contains(pair);
     return ListTile(
         title: Text(
-            pair.asPascalCase,
+            pair,
             style: _biggerFont,
         ),
         trailing: Icon(
@@ -82,10 +104,10 @@ class _RandomWordsState extends State<RandomWords> {
         MaterialPageRoute<void>(
                 builder: (BuildContext context) {
                   final tiles = _saved.map(
-                    (WordPair pair) {
+                    (String pair) {
                       return ListTile(
                         title: Text(
-                          pair.asPascalCase,
+                          pair,
                           style: _biggerFont,
                         ),
                       );
